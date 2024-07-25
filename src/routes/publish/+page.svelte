@@ -1,3 +1,4 @@
+<!-- src/routes/publish/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
 
@@ -21,7 +22,7 @@
     const data = {
       title,
       content,
-      category, // Use category name here
+      category, // Ensure this matches the category names in the database
       image: image || null,
     };
 

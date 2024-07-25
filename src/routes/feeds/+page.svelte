@@ -1,10 +1,24 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  let news: any[] = [];
-  let errorMessage = '';
+  interface Category {
+    name: string;
+  }
 
-  let categories = [
+  interface NewsArticle {
+    title: string;
+    content: string;
+    image?: string;
+    userEmail?: string;
+    category: Category;
+    popularity?: string;
+  }
+
+  let news: NewsArticle[] = [];
+  let errorMessage = '';
+  let isLoading = true;
+
+  const categories = [
     'World',
     'Business',
     'India',
@@ -23,7 +37,10 @@
         errorMessage = `Failed to fetch news: ${errorData.error}`;
       }
     } catch (error) {
+      console.error('Network error:', error);
       errorMessage = 'Failed to fetch news due to network error.';
+    } finally {
+      isLoading = false;
     }
   }
 
@@ -41,7 +58,9 @@
     <div class="flex flex-col lg:flex-row">
       <!-- Main Content -->
       <main class="flex-1 lg:mr-8">
-        {#if errorMessage}
+        {#if isLoading}
+          <p class="text-lg font-medium text-gray-600 dark:text-gray-400">Loading...</p>
+        {:else if errorMessage}
           <p class="text-red-600 dark:text-red-400">{errorMessage}</p>
         {:else if news.length === 0}
           <p class="text-lg font-medium text-gray-600 dark:text-gray-400">No news articles available.</p>

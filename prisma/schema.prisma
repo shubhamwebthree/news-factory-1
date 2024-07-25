@@ -28,9 +28,7 @@ model Category {
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
-  userEmail String
   newsId    Int
   createdAt DateTime @default(now())
   News      News     @relation(fields: [newsId], references: [id])
 }
-
