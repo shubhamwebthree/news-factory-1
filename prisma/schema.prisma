@@ -1,34 +1,34 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-model News {
-  id        Int       @id @default(autoincrement())
-  title     String
-  content   String
-  image     String?
-  updatedAt DateTime  @default(now())
-  createdAt DateTime  @default(now())
-  category  Category  @relation(fields: [categoryId], references: [id])
-  categoryId Int
-  Comments  Comment[]
-}
-
-model Category {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-  News News[]
-}
-
-model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String
-  newsId    Int
-  createdAt DateTime @default(now())
-  News      News     @relation(fields: [newsId], references: [id])
+datasource db { 
+  provider = "postgresql" 
+  url      = env("DATABASE_URL") 
+} 
+ 
+generator client { 
+  provider = "prisma-client-js" 
+} 
+ 
+model News { 
+  id          Int        @id @default(autoincrement()) 
+  title       String 
+  content     String 
+  createdAt   DateTime   @default(now()) 
+  updatedAt   DateTime   @updatedAt 
+  image       String? 
+  categoryId  Int 
+  category    Category   @relation(fields: [categoryId], references: [id]) 
+  comments    Comment[] 
+} 
+ 
+model Category { 
+  id       Int      @id @default(autoincrement()) 
+  name     String   @unique 
+  news     News[] 
+} 
+ 
+model Comment { 
+  id        Int      @id @default(autoincrement()) 
+  content   String 
+  createdAt DateTime @default(now()) 
+  newsId    Int 
+  news      News     @relation(fields: [newsId], references: [id]) 
 }
