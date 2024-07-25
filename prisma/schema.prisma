@@ -7,11 +7,30 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 model News {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   title     String
   content   String
   image     String?
-  createdAt DateTime @default(now())
+  updatedAt DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  category  Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  Comments  Comment[]
 }
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  News News[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userEmail String
+  newsId    Int
+  createdAt DateTime @default(now())
+  News      News     @relation(fields: [newsId], references: [id])
+}
+

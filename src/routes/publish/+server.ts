@@ -7,14 +7,14 @@ const prisma = new PrismaClient();
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { title, content, image, userEmail } = await request.json();
+    const { title, content, category, image, userEmail } = await request.json();
 
     const news = await prisma.news.create({
       data: {
         title,
         content,
+        category,
         image,
-        userEmail,
       },
     });
 

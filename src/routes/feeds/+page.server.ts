@@ -1,15 +1,20 @@
-// src/routes/feeds/+page.server.ts
-
 import type { PageServerLoad } from './$types';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Server-side load function for the feeds page
+export const load: PageServerLoad = async ({ fetch }) => {
+  try {
+    // Use event.fetch instead of global fetch
+    const response = await fetch('/api/news');
 
-export const load: PageServerLoad = async () => {
-  const news = await prisma.news.findMany({
-    orderBy: {
-      createdAt: 'desc', // Assuming you have a createdAt field in your schema
-    },
-  });
-  return { news };
+    if (response.ok) {
+      const news = await response.json();
+      return { news }; // Return the fetched news articles
+    } else {
+      console.error('Failed to fetch news');
+      return { news: [] }; // Return empty array if fetch fails
+    }
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    return { news: [] }; // Return empty array if error occurs
+  }
 };
