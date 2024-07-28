@@ -7,28 +7,40 @@ generator client {
   provider = "prisma-client-js" 
 } 
  
-model News { 
-  id          Int        @id @default(autoincrement()) 
-  title       String 
-  content     String 
-  createdAt   DateTime   @default(now()) 
-  updatedAt   DateTime   @updatedAt 
-  image       String? 
-  categoryId  Int 
-  category    Category   @relation(fields: [categoryId], references: [id]) 
-  comments    Comment[] 
-} 
- 
-model Category { 
-  id       Int      @id @default(autoincrement()) 
-  name     String   @unique 
-  news     News[] 
-} 
- 
-model Comment { 
-  id        Int      @id @default(autoincrement()) 
-  content   String 
-  createdAt DateTime @default(now()) 
-  newsId    Int 
-  news      News     @relation(fields: [newsId], references: [id]) 
+model Category {
+  id    Int      @id @default(autoincrement())
+  name  String
+  news  NewsArticle[]
+}
+
+model NewsArticle {
+  id            Int       @id @default(autoincrement())
+  title         String
+  content       String
+  image         String?
+  userEmail     String?
+  userWallet    String?   // Add this field for wallet address
+  categoryId    Int
+  category      Category  @relation(fields: [categoryId], references: [id])
+  popularity    String?
+  likes         Int       @default(0)  // Add this field for likes
+  createdAt     DateTime  @default(now())
+  comments      Comment[] // Add this field for comments
+}
+
+model Comment {
+  id           Int        @id @default(autoincrement())
+  content      String
+  newsArticle  NewsArticle @relation(fields: [newsArticleId], references: [id])
+  newsArticleId Int
+  createdAt    DateTime   @default(now())
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  walletAddress  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

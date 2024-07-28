@@ -1,5 +1,6 @@
 <script>
     import Dashboard from '$lib/Dashboard.svelte';
+    
     import Navbar from '$lib/Navbar.svelte';
    import "../app.css"
     

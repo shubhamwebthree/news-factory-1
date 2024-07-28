@@ -1,66 +1,70 @@
 // src/routes/api/news/+server.ts
-import { PrismaClient } from '@prisma/client';
-import type { RequestHandler } from '@sveltejs/kit';
+import { PrismaClient } from "@prisma/client";
+import type { RequestHandler } from "@sveltejs/kit";
 
 const prisma = new PrismaClient();
+
+export const GET: RequestHandler = async ({ url }) => {
+  try {
+    const category = url.searchParams.get('category');
+    const date = url.searchParams.get('date');
+    const popularity = url.searchParams.get('popularity');
+
+    let whereClause: any = {};
+
+    if (category) whereClause.category = { name: category };
+    if (date) whereClause.createdAt = { gte: new Date(date) };
+    if (popularity) whereClause.popularity = popularity;
+
+    const newsArticles = await prisma.newsArticle.findMany({
+      where: whereClause,
+      include: { category: true, comments: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return new Response(JSON.stringify(newsArticles), { status: 200 });
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    return new Response(JSON.stringify({ error: "Error fetching news" }), {
+      status: 500,
+    });
+  }
+};
+
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const { title, content, category, image } = await request.json();
 
-    // Find the categoryId from the category name
+    if (!title || !content || !category) {
+      return new Response(JSON.stringify({ error: "Title, content, and category are required." }), { status: 400 });
+    }
+
+    // Ensure the category exists
     const categoryRecord = await prisma.category.create({
       data: { name: category },
     });
-    console.log(categoryRecord)
 
     if (!categoryRecord) {
-      return new Response(JSON.stringify({ error: 'Category not found' }), { status: 404 });
+      return new Response(JSON.stringify({ error: "Invalid category." }), { status: 400 });
     }
 
-    const news = await prisma.news.create({
+    // Create the article
+    const newArticle = await prisma.newsArticle.create({
       data: {
         title,
         content,
-        image,
-        categoryId: categoryRecord.id,
-      },
+        image: image || null,
+        category: { connect: { id: categoryRecord.id } },
+        likes: 0,
+        createdAt: new Date(),
+        comments: { create: [] }
+      }
     });
 
-    return new Response(JSON.stringify(news), { status: 201 });
+    return new Response(JSON.stringify(newArticle), { status: 201 });
   } catch (error) {
-    console.error('Error creating news:', error);
-    return new Response(JSON.stringify({ error: 'Error creating news' }), { status: 500 });
+    console.error("Error creating news article:", error);
+    return new Response(JSON.stringify({ error: "Error creating news article" }), { status: 500 });
   }
-};
-
-// export const GET: RequestHandler = async () => {
-//   try {
-//     const news = await prisma.news.findMany({
-//       include: {
-//         category: true,
-//       },
-//     });
-
-//     return new Response(JSON.stringify(news), { status: 200 });
-//   } catch (error) {
-//     console.error('Error fetching news:', error);
-//     return new Response(JSON.stringify({ error: 'Error fetching news' }), { status: 500 });
-//   }
-// };
-
-export const GET: RequestHandler = async () => { 
-  try { 
-    console.log('Fetching news...'); 
-    const news = await prisma.news.findMany({ 
-      include: { 
-        category: true, 
-      }, 
-    }); 
-    console.log('News fetched successfully:', news); 
-    return new Response(JSON.stringify(news), { status: 200 }); 
-  } catch (error) { 
-    console.error('Error fetching news:', error); 
-    return new Response(JSON.stringify({ error: 'Error fetching news' }), { status: 500 }); 
-  } 
 };
