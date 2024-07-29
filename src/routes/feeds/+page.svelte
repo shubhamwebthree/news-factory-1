@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Newsarticle from '../../components/Newsarticle.svelte';
   import { onMount } from 'svelte';
 
   interface Category {

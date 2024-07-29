@@ -1,14 +1,13 @@
-<!-- src/routes/publish/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
 
   let title = '';
   let content = '';
-  let category = ''; // Use category name here
+  let category = '';
   let image = '';
   let successMessage = '';
+  let walletAddress = '';
 
-  // Hard-coded categories
   let categories = [
     { name: 'World' },
     { name: 'Business' },
@@ -18,12 +17,27 @@
     { name: 'Politics' }
   ];
 
+  onMount(async () => {
+    try {
+      const response = await fetch('/api/user-wallet');
+      if (response.ok) {
+        const data = await response.json();
+        walletAddress = data.walletAddress;
+      } else {
+        console.error('Failed to fetch wallet address');
+      }
+    } catch (error) {
+      console.error('Error fetching wallet address:', error);
+    }
+  });
+
   async function submitNews() {
     const data = {
       title,
       content,
-      category, // Ensure this matches the category names in the database
+      category,
       image: image || null,
+      userWallet: walletAddress, // Include the wallet address in the payload
     };
 
     const response = await fetch('/api/news', {
@@ -53,9 +67,13 @@
     </header>
 
     <div class="flex flex-col lg:flex-row">
-      <!-- Main Content -->
       <main class="flex-1 lg:mr-8">
         <form on:submit|preventDefault={submitNews} class="space-y-8">
+          <div>
+            <label for="wallet-address" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Wallet Address</label>
+            <input id="wallet-address" type="text" value={walletAddress} readonly class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+          </div>
+
           <div>
             <label for="title" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Title</label>
             <input id="title" type="text" bind:value={title} required class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
@@ -87,7 +105,6 @@
         </form>
       </main>
 
-      <!-- Sidebar -->
       <aside class="mt-8 lg:mt-0 lg:w-1/4 lg:ml-8">
         <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg border border-gray-300 dark:border-gray-700 text-left mb-8">
           <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Publishing Guidelines</h2>
