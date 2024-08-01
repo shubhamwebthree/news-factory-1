@@ -25,6 +25,7 @@ export const actions = {
         update: {
           password: data.get('password'),
           walletAddress: addresses.data.addresses[0]
+
         },
         create: {
           email: data.get('email'),
@@ -49,7 +50,14 @@ export const actions = {
     const signUpResponse = await authModule.signUp({ email: data.get('email'), password: data.get('password') });
     console.log(signUpResponse);
 
+    
+    const phoneVerificationResponse = await authModule.phone({ phone: 9634464906, country_code: 91 });
+    console.log(phoneVerificationResponse);
+
+    const verifyPhoneResponse = await authModule.verifyPhoneNo({ phone: '9634464906', otp: '2780' });
+    console.log(verifyPhoneResponse);
     // Insert the signup data into the database
+    
     try {
       const user = await prisma.user.create({
         data: {

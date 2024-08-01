@@ -1,13 +1,19 @@
 <script>
   import { onMount } from 'svelte';
 
+    /** @type {import('./$types').ActionData} */;
+    export let form;
+
   let title = '';
   let content = '';
   let category = '';
   let image = '';
   let successMessage = '';
   let walletAddress = '';
+  let email = '';
+  let password = '';
 
+  // List of categories for the news article
   let categories = [
     { name: 'World' },
     { name: 'Business' },
@@ -17,43 +23,54 @@
     { name: 'Politics' }
   ];
 
+  // Fetch user data on component mount
   onMount(async () => {
     try {
       const response = await fetch('/api/user-wallet');
       if (response.ok) {
         const data = await response.json();
         walletAddress = data.walletAddress;
+        email = data.email;
+        password = data.password;
       } else {
-        console.error('Failed to fetch wallet address');
+        console.error('Failed to fetch user data');
       }
     } catch (error) {
-      console.error('Error fetching wallet address:', error);
+      console.error('Error fetching user data:', error);
     }
   });
 
+  // Function to submit news article data
   async function submitNews() {
     const data = {
       title,
       content,
       category,
       image: image || null,
-      userWallet: walletAddress, // Include the wallet address in the payload
+      userWallet: walletAddress,
+      userEmail: email,
+      userPassword: password
     };
 
-    const response = await fetch('/api/news', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-    if (response.ok) {
-      const result = await response.json();
-      successMessage = 'News article successfully created!';
-      console.log('News created:', result);
-    } else {
-      const errorData = await response.json();
-      console.error('Error creating news:', errorData.error);
-      successMessage = `Failed to create news article: ${errorData.error}`;
+      if (response.ok) {
+        const result = await response.json();
+        successMessage = 'News article successfully created!';
+        console.log('News created:', result);
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating news:', errorData.error);
+        successMessage = `Failed to create news article: ${errorData.error}`;
+      }
+    } catch (error) {
+      console.error('Error creating news article:', error);
+      successMessage = 'An unexpected error occurred';
     }
   }
 </script>
@@ -69,10 +86,27 @@
     <div class="flex flex-col lg:flex-row">
       <main class="flex-1 lg:mr-8">
         <form on:submit|preventDefault={submitNews} class="space-y-8">
-          <div>
-            <label for="wallet-address" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Wallet Address</label>
-            <input id="wallet-address" type="text" value={walletAddress} readonly class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+          
+          <form method="POST" action="?/pay" class="space-y-6">
+          
+            <div>
+            <label for="email" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Email</label>
+            <input id="email" type="text" bind:value={email} readonly class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
           </div>
+          
+            <div>
+              <label for="wallet-address" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Wallet Address</label>
+              <input id="wallet-address" type="text" bind:value={walletAddress} readonly class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+            </div>
+            
+            
+            <div>
+              <label for="password" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Password</label>
+              <input id="password" type="password" bind:value={password} readonly class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
+            </div> 
+          </form>
+          
+
 
           <div>
             <label for="title" class="block mb-2 text-lg font-medium text-gray-900 dark:text-gray-300">Title</label>
@@ -102,6 +136,13 @@
           {#if successMessage}
             <p class="mt-4 text-lg font-medium {successMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">{successMessage}</p>
           {/if}
+        
+          {#if form?.success}
+          <p class="mt-4 text-lg font-medium">The Payment was successful. Here is your <a href="https://whatsonchain.com/tx/{form?.payment}"><p class="mt-4 text-lg font-medium text-green-600 dark:text-green-400"
+          >Transaction</p></a></p>
+          {/if}
+
+
         </form>
       </main>
 
